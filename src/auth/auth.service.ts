@@ -8,7 +8,6 @@ import { ConfigService } from '@nestjs/config';
 import { User } from 'src/user/entities/user.entity';
 import { SignupDto } from './dto/signup.dto';
 import { Role } from 'src/common/enums/roles.enum';
-import { error } from 'console';
 
 @Injectable()
 export class AuthService {
@@ -18,45 +17,52 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async signUp(signupDto: SignupDto) {
+  async validateUser(userId: string): Promise<User> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new UnauthorizedException('Invalid token');
+    }
+    return user;
+  }
+
+  async signUp(signupDto: SignupDto): Promise<{ user: User; token: string }> {
     const { name, email, password } = signupDto;
 
-    const userExist = await this.userModel.findOne({email}).exec()
-    if(userExist) throw new ConflictException('user already exist')
+    const userExist = await this.userModel.findOne({ email }).exec();
+    if (userExist) {
+      throw new ConflictException('User already exists');
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await this.userModel.create({
       name,
       email,
       password: hashedPassword,
-      roles: [Role.client], 
+      roles: [Role.Admin], 
     });
 
-    await user.save();
+    const payload = { id: user._id.toString(), name: user.name, roles: user.roles };
+    const token = this.jwtService.sign(payload); 
 
-    const token = await this.jwtService.sign(
-      { id: user.id,name: user.name, roles: user.roles },
-      {
-        secret: this.configService.get<string>('JWT_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_EXPIRES'),
-      },
-    );
-    return {user, token };
+    return { user, token };
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<{ user: User; token: string }> {
     const { email, password } = loginDto;
-    const user = await this.userModel.findOne({ email });
+    const user = await this.userModel.findOne({ email }).exec();
 
-    if (!user) throw new UnauthorizedException('Invalid email or password');
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
     const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) throw new UnauthorizedException('Invalid email or password');
+    if (!passwordMatch) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
 
-    const token = await this.jwtService.sign(
-      { id: user.id, name:user.name, roles: user.roles },
-      {
-        secret: this.configService.get<string>('JWT_SECRET'),
-      },
-    );
-    return { user,token };
+    const payload = { id: user._id.toString(), name: user.name, roles: user.roles };
+    const token = this.jwtService.sign(payload); 
+
+    return { user, token };
   }
 }
