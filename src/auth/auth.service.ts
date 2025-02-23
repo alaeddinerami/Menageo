@@ -20,7 +20,7 @@ export class AuthService {
   async validateUser(userId: string): Promise<User> {
     const user = await this.userModel.findById(userId).exec();
     if (!user) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Invalid token');//tkone
     }
     return user;
   }
