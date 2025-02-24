@@ -38,7 +38,7 @@ export class AuthService {
       name,
       email,
       password: hashedPassword,
-      roles: [Role.Admin], 
+      roles: [Role.client], 
     });
 
     const payload = { id: user._id.toString(), name: user.name, roles: user.roles };

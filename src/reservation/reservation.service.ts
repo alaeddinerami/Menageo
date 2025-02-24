@@ -3,58 +3,72 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
-import { Reservation } from './entities/reservation.entity';
+import { Reservation, ReservationDocument } from './entities/reservation.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Role } from 'src/common/enums/roles.enum';
+import { log } from 'console';
 
 @Injectable()
 export class ReservationService {
   constructor(
-    @InjectModel('Reservation') private reservationModel: Model<Reservation>,
-    @InjectModel('User') private userModel: Model<User>,
+    @InjectModel(Reservation.name) private reservationModel: Model<ReservationDocument>,
+    @InjectModel(User.name) private userModel: Model<User>,
   ) {}
 
   async create(createReservationDto: CreateReservationDto, clientId: string): Promise<Reservation> {
     const { cleanerId, date, duration, notes } = createReservationDto;
-
+    console.log('Input:', { cleanerId, date, duration, notes });
+  
+    const requestedStart = new Date(date);
+    if (isNaN(requestedStart.getTime())) {
+      throw new BadRequestException('Invalid date format');
+    }
+    if (duration <= 0 || !Number.isInteger(duration)) {
+      throw new BadRequestException('Duration must be a positive integer');
+    }
+    const requestedEnd = new Date(requestedStart.getTime() + duration * 60 * 1000);
+  
     const cleaner = await this.userModel.findById(cleanerId).exec();
     if (!cleaner || !cleaner.roles.includes(Role.cleaner)) {
       throw new BadRequestException('Invalid cleaner ID');
     }
-
     const client = await this.userModel.findById(clientId).exec();
-    if (!client) throw new BadRequestException('Invalid client ID');
-
-    // Calculate the end time of the requested reservation
-    const requestedStart = new Date(date);
-    const requestedEnd = new Date(requestedStart.getTime() + duration * 60 * 1000);
-
-    // Check for overlapping reservations
-    const overlappingReservations = await this.reservationModel.find({
-      cleaner: cleanerId,
-      status: { $in: ['pending', 'confirmed'] },
-      $or: [
+    if (!client) {
+      throw new BadRequestException('Invalid client ID');
+    }
+  
+    
+      const cleanerOverlaps = await this.reservationModel.find({
+      cleaner: cleaner._id,
+      status: { $in: ['pending', 'accepted'] },
+      $and: [
+        { date: { $lt: requestedEnd } },
         {
-          date: { $lte: requestedEnd },
-          $expr: { $gte: [{ $add: ['$date', { $multiply: ['$duration', 60 * 1000] }]}, requestedStart] },
+          $expr: {
+            $gt: [
+              { $add: ['$date', { $multiply: ['$Duration', 60 * 1000] }] },
+              requestedStart,
+            ],
+          },
         },
       ],
     }).exec();
-
-    if (overlappingReservations.length > 0) {
+  
+  
+    if (cleanerOverlaps.length > 0) {
       throw new BadRequestException('Cleaner is already booked at this time');
     }
-
-    const reservation = new this.reservationModel({
-      cleaner,
-      client,
+    const reservation = await this.reservationModel.create({
+      cleaner: cleaner._id,
+      client: client._id,
       date: requestedStart,
-      duration,
+      Duration: duration,
       status: 'pending',
-      notes,
+      Note: notes,
     });
-
-    return reservation.save();
+  
+    console.log('Created Reservation:', reservation);
+    return reservation;
   }
 
   async findAll(userId: string, userRoles: Role[]): Promise<Reservation[]> {

@@ -8,7 +8,7 @@ import { UserModule } from 'src/user/user.module';
 
 @Module({
    imports:[
-      MongooseModule.forFeature([{name: 'Reservation', schema: ReservationSchema}]),
+      MongooseModule.forFeature([{name: Reservation.name, schema: ReservationSchema}]),
       UserModule
     ],
   controllers: [ReservationController],
