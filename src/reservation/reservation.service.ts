@@ -91,38 +91,61 @@ export class ReservationService {
     if (!reservation) {
       throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
-
-    if (!userRoles.includes(Role.Admin) && reservation.client.toString() !== userId) {
-      throw new BadRequestException('Unauthorized to modify this reservation');
+    if (reservation.status !== 'pending') {
+      throw new BadRequestException('Can only update pending reservations');
     }
 
-    const { date, duration } = updateReservationDto;
-    const newDate = date ? new Date(date) : reservation.date;
-    const newDuration = duration !== undefined ? duration : reservation.Duration;
+    const { date, duration, notes, status } = updateReservationDto;
 
-    const requestedStart = newDate;
-    const requestedEnd = new Date(requestedStart.getTime() + newDuration * 60 * 1000);
+    if (date || duration) {
+      const requestedStart = date ? new Date(date) : reservation.date;
+      const newDuration = duration ?? reservation.Duration;
+      
+      if (isNaN(requestedStart.getTime())) {
+        throw new BadRequestException('Invalid date format');
+      }
+      if (newDuration <= 0 || !Number.isInteger(newDuration)) {
+        throw new BadRequestException('Duration must be a positive integer');
+      }
 
-    // Check for overlaps, excluding the current reservation
-    const overlappingReservations = await this.reservationModel.find({
-      cleaner: reservation.cleaner,
-      status: { $in: ['pending', 'confirmed'] },
-      _id: { $ne: id },
-      $or: [
-        {
-          date: { $lte: requestedEnd },
-          $expr: { $gte: [{ $add: ['$date', { $multiply: ['$duration', 60 * 1000] }]}, requestedStart] },
-        },
-      ],
-    }).exec();
+      const requestedEnd = new Date(requestedStart.getTime() + newDuration * 60 * 1000);
 
-    if (overlappingReservations.length > 0) {
-      throw new BadRequestException('Cleaner is already booked at this time');
+      const cleanerOverlaps = await this.reservationModel.find({
+        cleaner: reservation.cleaner,
+        _id: { $ne: reservation._id }, 
+        status: { $in: ['pending', 'accepted'] },
+        $and: [
+          { date: { $lt: requestedEnd } },//date is less than requested end
+          {
+            $expr: {
+              $gt: [
+                { $add: ['$date', { $multiply: ['$Duration', 60 * 1000] }] },
+                requestedStart,
+              ],
+            },
+          },
+        ],
+      }).exec();
+
+      if (cleanerOverlaps.length > 0) {
+        throw new BadRequestException('Cleaner is already booked at this time');
+      }
+
+      if (date) reservation.date = requestedStart;
+      if (duration) reservation.Duration = newDuration;
     }
 
-    reservation.date = newDate;
-    reservation.Duration = newDuration;
-    return reservation.save();
+    if (notes !== undefined) reservation.Note = notes;
+    if (status) {
+      if (!['pending', 'accepted', 'rejected'].includes(status)) {
+        throw new BadRequestException('Invalid status value');
+      }
+      reservation.status = status;
+    }
+
+    const updatedReservation = await reservation.save();
+    console.log('Updated Reservation:', updatedReservation);
+    return updatedReservation;
   }
 
   async remove(id: string, userId: string, userRoles: Role[]): Promise<Reservation> {
