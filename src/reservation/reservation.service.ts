@@ -153,12 +153,7 @@ export class ReservationService {
     if (!reservation) {
       throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
-
-    if (!userRoles.includes(Role.Admin) && reservation.client.toString() !== userId) {
-      throw new BadRequestException('Unauthorized to cancel this reservation');
-    }
-
-    reservation.status = 'cancelled';
+   reservation.status = 'cancelled';
     return reservation.save();
   }
 }
