@@ -115,7 +115,7 @@ export class ReservationService {
         _id: { $ne: reservation._id }, 
         status: { $in: ['pending', 'accepted'] },
         $and: [
-          { date: { $lt: requestedEnd } },
+          { date: { $lt: requestedEnd } },//date is less than requested end
           {
             $expr: {
               $gt: [
