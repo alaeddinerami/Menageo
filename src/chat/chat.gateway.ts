@@ -38,7 +38,7 @@ export class ChatGateway {
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-  }//sfvsdf
+  }//sfvsdfdfbdfb
 
   @SubscribeMessage('joinChat')
   async handleJoinChat(client: Socket, receiverId: string) {
