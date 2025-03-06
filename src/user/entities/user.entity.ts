@@ -5,10 +5,19 @@ import { Role } from 'src/common/enums/roles.enum';
 export class User {
   @Prop()
   name: string;
-  @Prop({required: true, unique: true})
+  @Prop({ required: true, unique: true })
   email: string;
   @Prop()
   password: string;
+
+  @Prop()
+  location: string;
+
+  @Prop()
+  phone: string;
+  
+  @Prop({ default: '' })
+  image: string;
 
   @Prop({ type: [String], default: [Role.client] })
   roles: Role[];

@@ -11,8 +11,8 @@ import * as bcrypt from 'bcryptjs';
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const { email, password, Username } = createUserDto;
+  async create(createUserDto: CreateUserDto,  image: Express.Multer.File): Promise<User> {
+    const { email, password, Username, location, phone } = createUserDto;
 
     const existingUser = await this.userModel.findOne({ email }).exec();
     if (existingUser) {
@@ -20,11 +20,14 @@ export class UserService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
+    const imagePath = image ? `uploads/event-images/${image.filename}` : null;
     const cleaner = new this.userModel({
       Username,
       email,
       password: hashedPassword,
+      location,
+      phone,
+      image: imagePath,
       roles: [Role.cleaner],
     });
 
@@ -44,9 +47,19 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-   
     const updatedUser = await this.userModel
       .findByIdAndUpdate(id, updateUserDto, { new: true })
+      .exec();
+    if (!updatedUser) {
+      throw new Error(`User with ID ${id} not found`);
+    }
+    return updatedUser;
+  }
+
+  // New method to update the user's image
+  async updateUserImage(id: string, imagePath: string): Promise<User> {
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(id, { image: imagePath }, { new: true })
       .exec();
     if (!updatedUser) {
       throw new Error(`User with ID ${id} not found`);
