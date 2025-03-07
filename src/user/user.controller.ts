@@ -21,6 +21,7 @@ export class UserController {
   }
 
   @Get()
+  @Roles( Role.client)
   findAll() {
     return this.userService.findAll(); 
   }

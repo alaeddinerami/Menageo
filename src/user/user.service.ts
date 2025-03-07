@@ -12,7 +12,7 @@ export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async create(createUserDto: CreateUserDto,  image: Express.Multer.File): Promise<User> {
-    const { email, password, Username, location, phone } = createUserDto;
+    const { email, password, name, location, phone } = createUserDto;
 
     const existingUser = await this.userModel.findOne({ email }).exec();
     if (existingUser) {
@@ -22,7 +22,7 @@ export class UserService {
     const hashedPassword = await bcrypt.hash(password, 10);
     const imagePath = image ? `uploads/event-images/${image.filename}` : null;
     const cleaner = new this.userModel({
-      Username,
+      name,
       email,
       password: hashedPassword,
       location,
@@ -56,7 +56,6 @@ export class UserService {
     return updatedUser;
   }
 
-  // New method to update the user's image
   async updateUserImage(id: string, imagePath: string): Promise<User> {
     const updatedUser = await this.userModel
       .findByIdAndUpdate(id, { image: imagePath }, { new: true })
