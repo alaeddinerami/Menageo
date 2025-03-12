@@ -17,7 +17,7 @@ export class ReservationService {
 
   async create(createReservationDto: CreateReservationDto, clientId: string): Promise<Reservation> {
     const { cleanerId, date, duration, notes } = createReservationDto;
-    console.log('Input:', { cleanerId, date, duration, notes });
+    // console.log('Input:', { cleanerId, date, duration, notes });
   
     const requestedStart = new Date(date);
     if (isNaN(requestedStart.getTime())) {
@@ -67,7 +67,7 @@ export class ReservationService {
       Note: notes,
     });
   
-    console.log('Created Reservation:', reservation);
+    // console.log('Created Reservation:', reservation);
     return reservation;
   }
 
@@ -78,13 +78,18 @@ export class ReservationService {
     return this.reservationModel.find({ client: userId }).populate('cleaner').exec();
   }
 
-  async findOne(id: string): Promise<Reservation> {
-    const reservation = await this.reservationModel.findById(id).populate('cleaner client').exec();
-    if (!reservation) {
-      throw new NotFoundException(`Reservation with ID ${id} not found`);
+  async findOne(id: string): Promise<Reservation[]> {
+    try {
+      const reservations = await this.reservationModel.find({ cleaner: new this.reservationModel.base.Types.ObjectId(id) }).select('date').exec();
+      // console.log('Reservations:', reservations);
+     
+      return reservations;
+    } catch (error) {
+      throw new NotFoundException(error.message);
     }
-    return reservation;
   }
+
+
 
   async update(id: string, updateReservationDto: UpdateReservationDto, userId: string, userRoles: Role[]): Promise<Reservation> {
     const reservation = await this.reservationModel.findById(id).exec();
