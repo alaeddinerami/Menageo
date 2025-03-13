@@ -1,17 +1,21 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from 'src/auth/auth.module'; 
 import { ChatService } from './chat.service';
 import { ChatController } from './chat.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { MessageSchema } from './entities/chat.entity';
-import { AuthModule } from 'src/auth/auth.module';
 import { ChatGateway } from './chat.gateway';
+import { ChatSchema, Chat } from './entities/chat.entity'; 
+import { MessageSchema, Message } from './entities/chat.entity'; 
 
 @Module({
-  imports:[
-    MongooseModule.forFeature([{name: 'Message', schema: MessageSchema}]),
-      AuthModule,
+  imports: [
+    MongooseModule.forFeature([
+      { name: 'Chat', schema: ChatSchema }, 
+      { name: 'Message', schema: MessageSchema }, 
+    ]),
+    AuthModule, 
   ],
   controllers: [ChatController],
-  providers: [ChatService,ChatGateway],
+  providers: [ChatService, ChatGateway], 
 })
 export class ChatModule {}
