@@ -25,7 +25,7 @@ export class ReservationController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    console.log('id2:', id);
+    // console.log('id2:', id);
     return this.reservationService.findOne(id);
   }
 
