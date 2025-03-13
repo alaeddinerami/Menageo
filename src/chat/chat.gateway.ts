@@ -1,8 +1,7 @@
-import { SubscribeMessage, WebSocketGateway, WebSocketServer, WsException } from '@nestjs/websockets';
+import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer, WsException } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
-import { CreateChatDto } from './dto/create-chat.dto';
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -11,20 +10,24 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
+  private userSocketMap: Map<string, string> = new Map();
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly chatService: ChatService,
   ) {}
 
+  // Middleware for authentication
   afterInit() {
     this.server.use((socket, next) => {
       const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
       if (!token) {
         return next(new WsException('No token provided'));
       }
+
       try {
         const payload = this.jwtService.verify(token);
-        socket.data.userId = payload.id; 
+        socket.data.userId = payload.id; // Save user ID in socket data
         next();
       } catch (error) {
         console.error('Token verification error:', error.message);
@@ -33,80 +36,77 @@ export class ChatGateway {
     });
   }
 
+  // Handle client connection
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}, User: ${client.data.userId}`);
+    const userId = client.data.userId;
+
+    // Store userId with socket ID
+    if (!this.userSocketMap.has(userId)) {
+      this.userSocketMap.set(userId, client.id);
+    }
   }
 
+  // Handle client disconnection
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}, User: ${client.data.userId}`);
+    const userId = client.data.userId;
+
+    // Remove userId from the map
+    if (this.userSocketMap.has(userId)) {
+      this.userSocketMap.delete(userId);
+    }
   }
 
-  @SubscribeMessage('joinChat')
-  async handleJoinChat(client: Socket, payload: { data: string }) {
+  // Handle sending a message
+  @SubscribeMessage('send_message')
+  async handleMessage(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { message: string; receiverId: string }
+  ): Promise<void> {
+    const { message, receiverId } = data;
     const senderId = client.data.userId;
-    const receiverId = payload.data;
-
-    if (!senderId || !receiverId) {
-      console.error('Invalid senderId or receiverId:', { senderId, receiverId });
-      client.emit('error', { message: 'Invalid sender or receiver ID' });
-      return;
+console.log('senderId:', senderId);
+console.log('receiverId:', receiverId);
+console.log('message:', message);
+    if (!receiverId) {
+      throw new WsException('Receiver ID not provided');
     }
 
-    const disc = this.getDiscutionName(senderId, receiverId);
-    client.join(disc);
-    
-    console.log(`Sender ${senderId} joined chat with Receiver ${receiverId} in discution ${disc}`);
-    const roomClients = this.server.sockets.adapter.rooms.get(disc)?.size || 0;
-    console.log(`Clients in room ${disc}: ${roomClients}`);
+    // Save the message using ChatService
+    const newMessage = await this.chatService.sendMessage(senderId, receiverId, message);
 
-    const messages = await this.chatService.getMessages(senderId, receiverId);
-    client.emit('chatHistory', messages);
+    // Check if receiver is connected
+    const receiverSocketId = this.userSocketMap.get(receiverId);
+    if (receiverSocketId) {
+      // Receiver is connected, send the message
+      this.server.to(receiverSocketId).emit('message_received', {
+        message: newMessage.content,
+        senderId: senderId,
+      });
+    } else {
+      console.log(`Receiver ${receiverId} is not connected`);
+      // Optionally, handle offline case (e.g., mark message as unread in DB)
+    }
+ 
+    // Send confirmation to sender
+    client.emit('message_sent', {
+      message: newMessage.content,
+      receiverId: receiverId,
+    });
   }
 
-  @SubscribeMessage('message')
-  async handleMessage(client: Socket, payload: { data: { receiverId: string; content: string } }) {
-    const senderId = client.data.userId;
-    const receiverId = payload.data.receiverId;
-    const content = payload.data.content;
-
-    if (!senderId || !receiverId || !content) {
-      console.error('Invalid message data:', { senderId, receiverId, content });
-      client.emit('error', { message: 'Invalid message data' });
-      return;
-    }
-
-    const disc = this.getDiscutionName(senderId, receiverId);
-
-    console.log(`Message from Sender ${senderId} to Receiver ${receiverId}: ${content}`);
-    console.log(`Broadcasting to room: ${disc}`);
-
-    const createChatDto: CreateChatDto = {
-      senderId,
-      receiverId,
-      content,
-    };
-
+  // Get messages between two users
+  @SubscribeMessage('get_messages')
+  async handleGetMessages(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() { userId, otherUserId }: { userId: string; otherUserId: string }
+  ): Promise<void> {
     try {
-      const savedMessage = await this.chatService.saveMessage(createChatDto);
-      const messageData = {
-        id: savedMessage._id,
-        senderId,
-        receiverId,
-        content,
-        isRead: savedMessage.isRead,
-      };
-
-      console.log(`Emitting message to room ${disc}:`, messageData);
-      this.server.emit('message', messageData)
-      const roomClients = this.server.sockets.adapter.rooms.get(disc)?.size || 0;
-      console.log(`Clients in room ${disc} after emit: ${roomClients}`);
+      const messages = await this.chatService.getMessages(userId, otherUserId);
+      client.emit('messages', messages);
     } catch (error) {
-      console.error('Error saving or broadcasting message:', error.message);
-      client.emit('error', { message: 'Failed to send message' });
+      client.emit('error', error.message);
     }
-  }
-
-  private getDiscutionName(userId1: string, userId2: string): string {
-    return [userId1, userId2].sort().join('_');
   }
 }
