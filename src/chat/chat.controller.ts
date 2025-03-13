@@ -1,17 +1,20 @@
-import { Controller, Post, Body, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
-import { Message } from './entities/chat.entity';
+import { Message } from './entities/chat.entity'; // Message Entity
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('chat')
-@UseGuards(AuthGuard('jwt')) // Protect all endpoints with JWT authentication
+@UseGuards(AuthGuard('jwt')) 
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
-  @Post('messages')
-  async saveMessage(@Body() createChatDto: CreateChatDto): Promise<Message> {
-    return this.chatService.saveMessage(createChatDto);
+  @Post('message')
+  async sendMessage(
+    @Body() createChatDto: CreateChatDto, 
+  ): Promise<Message> {
+    const { senderId, receiverId, content } = createChatDto;
+    return this.chatService.sendMessage(senderId, receiverId, content);
   }
 
   @Get('messages/:userId/:otherUserId')
@@ -20,5 +23,10 @@ export class ChatController {
     @Param('otherUserId') otherUserId: string,
   ): Promise<Message[]> {
     return this.chatService.getMessages(userId, otherUserId);
+  }
+
+  @Patch('message/:messageId/read')
+  async markMessageAsRead(@Param('messageId') messageId: string): Promise<Message> {
+    return this.chatService.markMessageAsRead(messageId);
   }
 }
