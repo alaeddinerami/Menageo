@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
-import { Message } from './entities/chat.entity'; // Message Entity
+import { Chat, Message } from './entities/chat.entity'; // Message Entity
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('chat')
@@ -24,7 +24,10 @@ export class ChatController {
   ): Promise<Message[]> {
     return this.chatService.getMessages(userId, otherUserId);
   }
-
+  @Get('/:userId')
+  async getChats(@Param('userId') userId: string) {
+    return this.chatService.getUserChats(userId);
+  }
   @Patch('message/:messageId/read')
   async markMessageAsRead(@Param('messageId') messageId: string): Promise<Message> {
     return this.chatService.markMessageAsRead(messageId);

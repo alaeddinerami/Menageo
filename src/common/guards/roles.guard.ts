@@ -1,7 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from '../enums/roles.enum';
-import { log } from 'console';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -15,7 +14,7 @@ export class RolesGuard implements CanActivate {
     
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    log(user)
+    // console.log(user)
     if (!user || !user.roles) {
       throw new UnauthorizedException('Access Denied');
     }

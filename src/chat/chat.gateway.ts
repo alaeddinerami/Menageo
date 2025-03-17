@@ -17,7 +17,6 @@ export class ChatGateway {
     private readonly chatService: ChatService,
   ) {}
 
-  // Middleware for authentication
   afterInit() {
     this.server.use((socket, next) => {
       const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
@@ -27,7 +26,7 @@ export class ChatGateway {
 
       try {
         const payload = this.jwtService.verify(token);
-        socket.data.userId = payload.id; // Save user ID in socket data
+        socket.data.userId = payload.id; 
         next();
       } catch (error) {
         console.error('Token verification error:', error.message);
@@ -73,30 +72,25 @@ console.log('message:', message);
       throw new WsException('Receiver ID not provided');
     }
 
-    // Save the message using ChatService
     const newMessage = await this.chatService.sendMessage(senderId, receiverId, message);
 
-    // Check if receiver is connected
     const receiverSocketId = this.userSocketMap.get(receiverId);
+
     if (receiverSocketId) {
-      // Receiver is connected, send the message
-      this.server.to(receiverSocketId).emit('message_received', {
+      this.server.to(receiverSocketId).emit(`message_received-${receiverId}`, {
         message: newMessage.content,
         senderId: senderId,
       });
     } else {
       console.log(`Receiver ${receiverId} is not connected`);
-      // Optionally, handle offline case (e.g., mark message as unread in DB)
     }
  
-    // Send confirmation to sender
     client.emit('message_sent', {
       message: newMessage.content,
       receiverId: receiverId,
     });
   }
 
-  // Get messages between two users
   @SubscribeMessage('get_messages')
   async handleGetMessages(
     @ConnectedSocket() client: Socket,

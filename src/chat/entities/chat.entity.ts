@@ -29,7 +29,10 @@ export class Chat extends Document {
 
   @Prop({ type: [MessageSchema], default: [] })
   messages: Message[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
+
 
 export type ChatDocument = Chat;
 export const ChatSchema = SchemaFactory.createForClass(Chat);

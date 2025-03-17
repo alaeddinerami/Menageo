@@ -16,7 +16,7 @@ export class User {
   @Prop()
   phone: string;
   
-  @Prop({ default: '' })
+  @Prop({ default: 'https://avatar.iran.liara.run/public' })
   image: string;
 
   @Prop({ type: [String], default: [Role.client] })
