@@ -16,7 +16,7 @@ export class CreateReservationDto {
   @IsInt()
   @Min(1)
   duration: number;
-  
+
   @IsString()
   status: string;
 
