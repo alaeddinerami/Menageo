@@ -7,10 +7,12 @@ import { UserSchema } from 'src/user/entities/user.entity';
 import { UserModule } from 'src/user/user.module';
 
 @Module({
-   imports:[
-      MongooseModule.forFeature([{name: Reservation.name, schema: ReservationSchema}]),
-      UserModule
-    ],
+  imports: [
+    MongooseModule.forFeature([
+      { name: Reservation.name, schema: ReservationSchema },
+    ]),
+    UserModule,
+  ],
   controllers: [ReservationController],
   providers: [ReservationService],
 })
