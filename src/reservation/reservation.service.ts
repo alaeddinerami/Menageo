@@ -66,9 +66,7 @@ export class ReservationService {
       status: 'pending',
       Note: notes,
     });
-  
-    // console.log('Created Reservation:', reservation);
-    return reservation;
+ return await reservation.save();
   }
 
   async findAll(userId: string, userRoles: Role[]): Promise<Reservation[]> {
@@ -89,6 +87,13 @@ export class ReservationService {
     }
   }
 
+
+  
+  async findAllReservationsCleaner(userId: string): Promise<Reservation[]> {
+
+
+    return this.reservationModel.find({ cleaner: userId }).populate('client').exec();
+  }
 
 
   async update(id: string, updateReservationDto: UpdateReservationDto, userId: string, userRoles: Role[]): Promise<Reservation> {
