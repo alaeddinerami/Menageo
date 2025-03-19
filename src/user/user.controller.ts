@@ -16,7 +16,7 @@ export class UserController {
 
   @Post()
   @UseInterceptors(ImageUploadInterceptor())
-  create(@Body() createUserDto: CreateUserDto,     @UploadedFile() image: Express.Multer.File,) {
+  create(@Body() createUserDto: CreateUserDto,     @UploadedFile() image: Express.Multer.File) {
     return this.userService.create(createUserDto, image); 
   }
 
