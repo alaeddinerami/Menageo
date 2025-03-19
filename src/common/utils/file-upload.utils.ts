@@ -3,10 +3,10 @@ import { extname } from 'path';
 
 export const multerConfig = {
   storage: diskStorage({
-    destination: './uploads/event-images', 
+    destination: './uploads/event-images',
     filename: (req, file, callback) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-      const ext = extname(file.originalname); 
+      const ext = extname(file.originalname);
       callback(null, `event-${uniqueSuffix}${ext}`);
     },
   }),
