@@ -9,7 +9,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 
 @Controller('reservations')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@Roles(Role.client)
+// @Roles(Role.client)
 export class ReservationController {
   constructor(private readonly reservationService: ReservationService) {}
 
@@ -23,9 +23,13 @@ export class ReservationController {
     return this.reservationService.findAll(req.user._id, req.user.roles);
   }
 
+  @Get('cleaner')
+  finAllReservationsCleaner(@Request() req) {
+    return this.reservationService.findAllReservationsCleaner(req.user._id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
-    // console.log('id2:', id);
     return this.reservationService.findOne(id);
   }
 
