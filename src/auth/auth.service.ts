@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -21,14 +25,17 @@ export class AuthService {
   async validateUser(userId: string): Promise<User> {
     const user = await this.userModel.findById(userId).exec();
     if (!user) {
-      throw new UnauthorizedException('Invalid token');//token is sfbbsfb
+      throw new UnauthorizedException('Invalid token'); //token is sfbbsfb
     }
     return user;
   }
 
-  async signUp(signupDto: SignupDto, image: Express.Multer.File): Promise<{ user: User; token: string }> {
+  async signUp(
+    signupDto: SignupDto,
+    image: Express.Multer.File,
+  ): Promise<{ user: User; token: string }> {
     log(signupDto);
-    const { name, email, password,phone, location } = signupDto;
+    const { name, email, password, phone, location } = signupDto;
 
     const userExist = await this.userModel.findOne({ email }).exec();
     if (userExist) {
@@ -42,14 +49,18 @@ export class AuthService {
       name,
       email,
       password: hashedPassword,
-      roles: [Role.client], 
+      roles: [Role.client],
       phone,
       location,
       image: imagePath,
     });
 
-    const payload = { id: user._id.toString(), name: user.name, roles: user.roles };
-    const token = this.jwtService.sign(payload); 
+    const payload = {
+      id: user._id.toString(),
+      name: user.name,
+      roles: user.roles,
+    };
+    const token = this.jwtService.sign(payload);
 
     return { user, token };
   }
@@ -67,8 +78,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const payload = { id: user._id.toString(), name: user.name, roles: user.roles };
-    const token = this.jwtService.sign(payload); 
+    const payload = {
+      id: user._id.toString(),
+      name: user.name,
+      roles: user.roles,
+    };
+    const token = this.jwtService.sign(payload);
 
     return { user, token };
   }
