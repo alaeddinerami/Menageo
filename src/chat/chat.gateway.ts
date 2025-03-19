@@ -44,7 +44,6 @@ export class ChatGateway {
     });
   }
 
-  // Handle client connection
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}, User: ${client.data.userId}`);
     const userId = client.data.userId;
