@@ -1,7 +1,6 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument, Types } from "mongoose";
-import { User } from "src/user/entities/user.entity";
-
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Types } from 'mongoose';
+import { User } from 'src/user/entities/user.entity';
 
 export type ReservationDocument = HydratedDocument<Reservation>;
 
@@ -15,9 +14,13 @@ export class Reservation {
   date: Date;
   @Prop({ required: true })
   Duration: number;
-  @Prop({ required: true, enum: ['pending', 'accepted', 'rejected'], default: 'pending' })
+  @Prop({
+    required: true,
+    enum: ['pending', 'accepted', 'rejected'],
+    default: 'pending',
+  })
   status: string;
-  @Prop() 
+  @Prop()
   Note?: string;
 }
 export const ReservationSchema = SchemaFactory.createForClass(Reservation);
