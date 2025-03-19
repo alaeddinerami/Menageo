@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { User } from 'src/user/entities/user.entity';
 import { SignupDto } from './dto/signup.dto';
 import { Role } from 'src/common/enums/roles.enum';
+import { log } from 'console';
 
 @Injectable()
 export class AuthService {
@@ -25,8 +26,9 @@ export class AuthService {
     return user;
   }
 
-  async signUp(signupDto: SignupDto): Promise<{ user: User; token: string }> {
-    const { name, email, password } = signupDto;
+  async signUp(signupDto: SignupDto, image: Express.Multer.File): Promise<{ user: User; token: string }> {
+    log(signupDto);
+    const { name, email, password,phone, location } = signupDto;
 
     const userExist = await this.userModel.findOne({ email }).exec();
     if (userExist) {
@@ -34,11 +36,16 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const imagePath = image ? `uploads/event-images/${image.filename}` : null;
+
     const user = await this.userModel.create({
       name,
       email,
       password: hashedPassword,
       roles: [Role.client], 
+      phone,
+      location,
+      image: imagePath,
     });
 
     const payload = { id: user._id.toString(), name: user.name, roles: user.roles };
