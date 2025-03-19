@@ -14,7 +14,6 @@ export class Message extends Document {
 
   @Prop({ default: Date.now })
   timestamp: Date;
-
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
@@ -32,7 +31,6 @@ export class Chat extends Document {
   createdAt?: Date;
   updatedAt?: Date;
 }
-
 
 export type ChatDocument = Chat;
 export const ChatSchema = SchemaFactory.createForClass(Chat);
