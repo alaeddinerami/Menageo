@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -16,28 +27,31 @@ export class UserController {
 
   @Post()
   @UseInterceptors(ImageUploadInterceptor())
-  create(@Body() createUserDto: CreateUserDto,     @UploadedFile() image: Express.Multer.File) {
-    return this.userService.create(createUserDto, image); 
+  create(
+    @Body() createUserDto: CreateUserDto,
+    @UploadedFile() image: Express.Multer.File,
+  ) {
+    return this.userService.create(createUserDto, image);
   }
 
   @Get()
-  @Roles( Role.client)
+  @Roles(Role.client)
   findAll() {
-    return this.userService.findAll(); 
+    return this.userService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(id); 
+    return this.userService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(id, updateUserDto); 
+    return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userService.remove(id); 
+    return this.userService.remove(id);
   }
 }
