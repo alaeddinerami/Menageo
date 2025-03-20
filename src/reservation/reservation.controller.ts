@@ -37,6 +37,10 @@ export class ReservationController {
   finAllReservationsCleaner(@Request() req) {
     return this.reservationService.findAllReservationsCleaner(req.user._id);
   }
+  @Get('client')
+  findAllReservationsClient(@Request() req) {
+    return this.reservationService.findAllReservationsClient(req.user._id);
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

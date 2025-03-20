@@ -112,6 +112,12 @@ export class ReservationService {
       .populate('client')
       .exec();
   }
+  async findAllReservationsClient(userId: string): Promise<Reservation[]> {
+    return this.reservationModel
+      .find({ client: userId })
+      .populate('cleaner')
+      .exec();
+  }
 
   async update(
     id: string,
