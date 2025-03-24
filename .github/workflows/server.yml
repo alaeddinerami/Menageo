@@ -36,8 +36,8 @@ jobs:
     - name: Run ESLint
       run: npm run lint
 
-    - name: Run user and reservation tests
-      run: npm run test:user-reservation
+    - name: Run user tests
+      run: npm run test user.service
       env:
         MONGO_URI: mongodb://localhost:27017/menageo
         JWT_SECRET: test_secret

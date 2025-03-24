@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -53,7 +57,7 @@ export class UserService {
   async update(
     id: string,
     updateUserDto: UpdateUserDto,
-    image?: Express.Multer.File
+    image?: Express.Multer.File,
   ): Promise<User> {
     const updateFields: any = {};
 
@@ -63,9 +67,13 @@ export class UserService {
     if (updateUserDto.location) updateFields.location = updateUserDto.location;
     if (updateUserDto.phone) updateFields.phone = updateUserDto.phone;
     if (updateUserDto?.email && updateUserDto.email !== currentUser.email) {
-      const emailExists = await this.userModel.findOne({ email: updateUserDto.email }).exec();
+      const emailExists = await this.userModel
+        .findOne({ email: updateUserDto.email })
+        .exec();
       if (emailExists && emailExists._id.toString() !== id) {
-        throw new ConflictException(`Email ${updateUserDto.email} is already in use by another user`);
+        throw new ConflictException(
+          `Email ${updateUserDto.email} is already in use by another user`,
+        );
       }
       updateFields.email = updateUserDto.email;
     }
@@ -77,7 +85,6 @@ export class UserService {
       console.log('No fields to update, returning current user');
       return this.findOne(id);
     }
-
 
     const updatedUser = await this.userModel
       .findByIdAndUpdate(id, updateFields, { new: true })

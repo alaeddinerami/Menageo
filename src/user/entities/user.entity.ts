@@ -21,6 +21,5 @@ export class User {
 
   @Prop({ type: [String], default: [Role.client] })
   roles: Role[];
-
 }
 export const UserSchema = SchemaFactory.createForClass(User);

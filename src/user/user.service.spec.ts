@@ -12,9 +12,8 @@ import { Role } from '../common/enums/roles.enum';
 describe('UserService', () => {
   let service: UserService;
   let userModel: Model<User>;
-  let mockUser: any;
 
-  mockUser = {
+  const mockUserData = {
     _id: '12345',
     name: 'John Doe',
     email: 'john@example.com',
@@ -23,19 +22,27 @@ describe('UserService', () => {
     phone: '1234567890',
     image: 'uploads/event-images/test.jpg',
     roles: [Role.cleaner],
-    save: jest.fn().mockResolvedValue(mockUser), 
+  };
+
+  const mockUser: any = {
+    ...mockUserData,
+    save: jest.fn().mockReturnThis(),
   };
 
   const mockUserModel = jest.fn().mockImplementation((props: any) => {
     const instance = Object.assign({}, mockUser, props);
-    instance.save = jest.fn().mockResolvedValue(instance); 
+    instance.save = jest.fn().mockResolvedValue(instance);
     return instance;
   }) as any;
   mockUserModel.findOne = jest.fn().mockReturnValue({ exec: jest.fn() });
   mockUserModel.find = jest.fn().mockReturnValue({ exec: jest.fn() });
   mockUserModel.findById = jest.fn().mockReturnValue({ exec: jest.fn() });
-  mockUserModel.findByIdAndUpdate = jest.fn().mockReturnValue({ exec: jest.fn() });
-  mockUserModel.findByIdAndDelete = jest.fn().mockReturnValue({ exec: jest.fn() });
+  mockUserModel.findByIdAndUpdate = jest
+    .fn()
+    .mockReturnValue({ exec: jest.fn() });
+  mockUserModel.findByIdAndDelete = jest
+    .fn()
+    .mockReturnValue({ exec: jest.fn() });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -67,12 +74,17 @@ describe('UserService', () => {
       };
       const image = { filename: 'test.jpg' } as Express.Multer.File;
 
-      jest.spyOn(bcrypt, 'hash').mockImplementation(() => Promise.resolve('$2a$10$hashedpassword'));
+      jest.spyOn(bcrypt, 'hash');
+      jest
+        .spyOn(bcrypt, 'hash')
+        .mockResolvedValue('$2a$10$hashedpassword' as never);
       mockUserModel.findOne().exec.mockResolvedValue(null);
 
       const result = await service.create(createUserDto, image);
 
-      expect(mockUserModel.findOne).toHaveBeenCalledWith({ email: 'john@example.com' });
+      expect(mockUserModel.findOne).toHaveBeenCalledWith({
+        email: 'john@example.com',
+      });
       expect(bcrypt.hash).toHaveBeenCalledWith('password123', 10);
       expect(mockUserModel).toHaveBeenCalledWith({
         name: 'John Doe',
@@ -95,7 +107,9 @@ describe('UserService', () => {
       };
       mockUserModel.findOne().exec.mockResolvedValue(mockUser);
 
-      await expect(service.create(createUserDto, undefined)).rejects.toThrow(ConflictException);
+      await expect(service.create(createUserDto, undefined)).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 
@@ -105,7 +119,9 @@ describe('UserService', () => {
 
       const result = await service.findAll();
 
-      expect(mockUserModel.find).toHaveBeenCalledWith({ roles: { $in: ['cleaner'] } });
+      expect(mockUserModel.find).toHaveBeenCalledWith({
+        roles: { $in: ['cleaner'] },
+      });
       expect(result).toEqual([mockUser]);
     });
   });
@@ -123,7 +139,9 @@ describe('UserService', () => {
     it('should throw an error if user not found', async () => {
       mockUserModel.findById().exec.mockResolvedValue(null);
 
-      await expect(service.findOne('12345')).rejects.toThrow('User with ID 12345 not found');
+      await expect(service.findOne('12345')).rejects.toThrow(
+        'User with ID 12345 not found',
+      );
     });
   });
 
@@ -164,16 +182,23 @@ describe('UserService', () => {
     it('should throw ConflictException if email is already in use', async () => {
       const updateUserDto: UpdateUserDto = { email: 'jane@example.com' };
       mockUserModel.findById().exec.mockResolvedValue(mockUser);
-      mockUserModel.findOne().exec.mockResolvedValue({ _id: 'differentId', email: 'jane@example.com' });
+      mockUserModel.findOne().exec.mockResolvedValue({
+        _id: 'differentId',
+        email: 'jane@example.com',
+      });
 
-      await expect(service.update('12345', updateUserDto)).rejects.toThrow(ConflictException);
+      await expect(service.update('12345', updateUserDto)).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('should throw NotFoundException if user not found', async () => {
       mockUserModel.findById().exec.mockResolvedValue(mockUser);
       mockUserModel.findByIdAndUpdate().exec.mockResolvedValue(null);
 
-      await expect(service.update('12345', { name: 'Jane Doe' })).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update('12345', { name: 'Jane Doe' }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -181,7 +206,10 @@ describe('UserService', () => {
     it('should update user image successfully', async () => {
       mockUserModel.findByIdAndUpdate().exec.mockResolvedValue(mockUser);
 
-      const result = await service.updateUserImage('12345', 'new/image/path.jpg');
+      const result = await service.updateUserImage(
+        '12345',
+        'new/image/path.jpg',
+      );
 
       expect(mockUserModel.findByIdAndUpdate).toHaveBeenCalledWith(
         '12345',
@@ -204,7 +232,9 @@ describe('UserService', () => {
     it('should throw an error if user not found', async () => {
       mockUserModel.findByIdAndDelete().exec.mockResolvedValue(null);
 
-      await expect(service.remove('12345')).rejects.toThrow('User with ID 12345 not found');
+      await expect(service.remove('12345')).rejects.toThrow(
+        'User with ID 12345 not found',
+      );
     });
   });
 });

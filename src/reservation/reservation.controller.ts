@@ -15,7 +15,6 @@ import { UpdateReservationDto } from './dto/update-reservation.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../common/guards/roles.guard';
 
-
 @Controller('reservations')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 // @Roles(Role.client)

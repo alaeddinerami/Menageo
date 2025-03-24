@@ -12,7 +12,7 @@ import {
   ReservationDocument,
 } from './entities/reservation.entity';
 import { User } from '../user/entities/user.entity';
-import { Role } from '../common/enums/roles.enum';  
+import { Role } from '../common/enums/roles.enum';
 import { log } from 'console';
 
 @Injectable()
@@ -190,12 +190,10 @@ export class ReservationService {
     return updatedReservation;
   }
 
-  async remove(
-    id: string,
-    userId: string,
-    userRoles: Role[],
-  ):Promise<void> {
-    const reservation = await this.reservationModel.findByIdAndDelete(id).exec();
+  async remove(id: string, userId: string, userRoles: Role[]): Promise<void> {
+    const reservation = await this.reservationModel
+      .findByIdAndDelete(id)
+      .exec();
     if (!reservation) {
       throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
