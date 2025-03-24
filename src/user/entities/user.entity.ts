@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Role } from 'src/common/enums/roles.enum';
+import { Role } from '../../common/enums/roles.enum';
 
 @Schema()
 export class User {
@@ -16,10 +16,11 @@ export class User {
   @Prop()
   phone: string;
 
-  @Prop({ default: 'https://avatar.iran.liara.run/public' })
-  image: string;
+  @Prop()
+  image?: string;
 
   @Prop({ type: [String], default: [Role.client] })
   roles: Role[];
+
 }
 export const UserSchema = SchemaFactory.createForClass(User);

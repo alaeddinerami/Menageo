@@ -7,9 +7,8 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
-import { single } from 'rxjs';
 import { LoginDto } from './dto/login.dto';
-import { ImageUploadInterceptor } from 'src/common/middleware/multer.middleware';
+import { ImageUploadInterceptor } from '../common/middleware/multer.middleware';
 
 @Controller('auth')
 export class AuthController {

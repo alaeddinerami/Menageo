@@ -36,12 +36,12 @@ jobs:
     - name: Run ESLint
       run: npm run lint
 
-    # - name: Run tests
-    #   run: npm test
-    #   env:
-    #     MONGODB_URI: mongodb://localhost:27017/test
-    #     JWT_SECRET: test_secret
-    #     PORT: 3000
+    - name: Run user and reservation tests
+      run: npm run test:user-reservation
+      env:
+        MONGO_URI: mongodb://localhost:27017/menageo
+        JWT_SECRET: test_secret
+        PORT: 3000
 
-    # - name: Build
-    #   run: npm run build 
+    - name: Build
+      run: npm run build 

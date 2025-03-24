@@ -9,9 +9,9 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
-import { User } from 'src/user/entities/user.entity';
+import { User } from '../user/entities/user.entity';
 import { SignupDto } from './dto/signup.dto';
-import { Role } from 'src/common/enums/roles.enum';
+import { Role } from '../common/enums/roles.enum';
 import { log } from 'console';
 
 @Injectable()

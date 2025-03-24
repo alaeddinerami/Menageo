@@ -13,11 +13,11 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { RolesGuard } from 'src/common/guards/roles.guard';
-import { Role } from 'src/common/enums/roles.enum';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Role } from '../common/enums/roles.enum';
+import { Roles } from '../common/decorators/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
-import { ImageUploadInterceptor } from 'src/common/middleware/multer.middleware';
+import { ImageUploadInterceptor } from '../common/middleware/multer.middleware';
 
 @Controller('user')
 @UseGuards(AuthGuard('jwt'), RolesGuard)

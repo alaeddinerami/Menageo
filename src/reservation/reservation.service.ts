@@ -11,8 +11,8 @@ import {
   Reservation,
   ReservationDocument,
 } from './entities/reservation.entity';
-import { User } from 'src/user/entities/user.entity';
-import { Role } from 'src/common/enums/roles.enum';
+import { User } from '../user/entities/user.entity';
+import { Role } from '../common/enums/roles.enum';  
 import { log } from 'console';
 
 @Injectable()
@@ -194,20 +194,10 @@ export class ReservationService {
     id: string,
     userId: string,
     userRoles: Role[],
-  ): Promise<Reservation> {
-    const reservation = await this.reservationModel.findById(id).exec();
+  ):Promise<void> {
+    const reservation = await this.reservationModel.findByIdAndDelete(id).exec();
     if (!reservation) {
       throw new NotFoundException(`Reservation with ID ${id} not found`);
     }
-
-    // if (
-    //   !userRoles.includes(Role.Admin) &&
-    //   reservation.client.toString() !== userId
-    // ) {
-    //   throw new BadRequestException('Unauthorized to cancel this reservation');
-    // }
-
-    reservation.status = 'cancelled';
-    return reservation.save();
   }
 }

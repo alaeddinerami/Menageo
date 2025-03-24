@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { Role } from 'src/common/enums/roles.enum';
+import { Role } from '../common/enums/roles.enum';
 import * as bcrypt from 'bcryptjs';
 import { log } from 'console';
 
@@ -14,7 +14,7 @@ export class UserService {
 
   async create(
     createUserDto: CreateUserDto,
-    image: Express.Multer.File,
+    image?: Express.Multer.File,
   ): Promise<User> {
     const { email, password, name, location, phone } = createUserDto;
 
