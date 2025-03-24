@@ -35,19 +35,26 @@ export class UserController {
   }
 
   @Get()
-  @Roles(Role.client)
+  @Roles(Role.Admin, Role.client)
   findAll() {
     return this.userService.findAll();
   }
 
   @Get(':id')
+  @Roles(Role.Admin, Role.client)
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(id, updateUserDto);
+  @UseInterceptors(ImageUploadInterceptor())
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto, 
+    @UploadedFile() image?: Express.Multer.File, 
+  ) {
+    
+    return this.userService.update(id, updateUserDto, image);
   }
 
   @Delete(':id')
