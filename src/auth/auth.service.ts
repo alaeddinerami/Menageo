@@ -48,7 +48,7 @@ export class AuthService {
           image: null,
         });
       } else {
-        // log('Admin user already exists:', adminEmail);
+        log('Admin user already exists:', adminEmail);
       }
     } catch (error) {
       console.error('Error seeding admin user:', error.message);

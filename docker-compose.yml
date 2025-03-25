@@ -14,7 +14,9 @@ services:
       - MONGO_URI=mongodb://mongo:27017/menageo 
       - PORT=3000
       - JWT_SECRET=secret
-      - JWT_EXPIRES=90d                         
+      - JWT_EXPIRES=90d        
+      - ADMIN_EMAIL=admin@gmail.com
+      - ADMIN_PASSWORD=12345678      
     depends_on:
       - mongo
     volumes:
@@ -28,6 +30,20 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    networks:
+      - app-network
+
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8085:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=password
+    depends_on:
+      - mongo
     networks:
       - app-network
 
