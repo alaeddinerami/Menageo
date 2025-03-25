@@ -44,22 +44,13 @@ describe('ReservationService', () => {
 
   const mockReservationModel = {
     create: jest.fn(),
-    find: jest.fn().mockImplementation(() => ({
-      exec: jest.fn().mockResolvedValue([]),
-      populate: jest.fn().mockReturnThis(),
-    })),
-    findById: jest.fn().mockImplementation(() => ({
-      exec: jest.fn().mockResolvedValue(null),
-    })),
-    findByIdAndDelete: jest.fn().mockImplementation(() => ({
-      exec: jest.fn().mockResolvedValue(null),
-    })),
+    find: jest.fn(),
+    findById: jest.fn(),
+    findByIdAndDelete: jest.fn(),
   };
 
   const mockUserModel = {
-    findById: jest.fn().mockImplementation(() => ({
-      exec: jest.fn().mockResolvedValue(null),
-    })),
+    findById: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -103,15 +94,11 @@ describe('ReservationService', () => {
         save: jest.fn().mockResolvedValue(mockReservation),
       };
       mockUserModel.findById
-        .mockImplementationOnce(() => ({
-          exec: jest.fn().mockResolvedValue(mockUser),
-        }))
-        .mockImplementationOnce(() => ({
-          exec: jest.fn().mockResolvedValue(mockClient),
-        }));
-      mockReservationModel.find.mockImplementation(() => ({
+        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(mockUser) })
+        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(mockClient) });
+      mockReservationModel.find.mockReturnValue({
         exec: jest.fn().mockResolvedValue([]),
-      }));
+      });
       mockReservationModel.create.mockResolvedValue(savedReservation);
 
       const result = await service.create(
@@ -130,7 +117,7 @@ describe('ReservationService', () => {
       );
 
       const startTime = new Date('2025-04-01T10:00:00Z');
-      const endTime = new Date(startTime.getTime() + 60 * 60000);
+      const endTime = new Date(startTime.getTime() + 60 * 60000); // 60 minutes in milliseconds
 
       expect(reservationModel.find).toHaveBeenCalledWith({
         $and: [
@@ -168,9 +155,9 @@ describe('ReservationService', () => {
     });
 
     it('should throw BadRequestException for invalid cleaner ID', async () => {
-      mockUserModel.findById.mockImplementation(() => ({
+      mockUserModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(null),
-      }));
+      });
       await expect(
         service.create(createReservationDto, mockClient._id.toString()),
       ).rejects.toThrow(BadRequestException);
@@ -178,15 +165,11 @@ describe('ReservationService', () => {
 
     it('should throw BadRequestException for overlapping reservation', async () => {
       mockUserModel.findById
-        .mockImplementationOnce(() => ({
-          exec: jest.fn().mockResolvedValue(mockUser),
-        }))
-        .mockImplementationOnce(() => ({
-          exec: jest.fn().mockResolvedValue(mockClient),
-        }));
-      mockReservationModel.find.mockImplementation(() => ({
+        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(mockUser) })
+        .mockReturnValueOnce({ exec: jest.fn().mockResolvedValue(mockClient) });
+      mockReservationModel.find.mockReturnValue({
         exec: jest.fn().mockResolvedValue([mockReservation]),
-      }));
+      });
 
       await expect(
         service.create(createReservationDto, mockClient._id.toString()),
@@ -196,11 +179,11 @@ describe('ReservationService', () => {
 
   describe('findAll', () => {
     it('should return all reservations for admin', async () => {
-      mockReservationModel.find.mockImplementation(() => ({
+      mockReservationModel.find.mockReturnValue({
         populate: jest.fn().mockReturnValue({
           exec: jest.fn().mockResolvedValue([mockReservation]),
         }),
-      }));
+      });
       const result = await service.findAll(mockUser._id.toString(), [
         Role.Admin,
       ]);
@@ -209,11 +192,11 @@ describe('ReservationService', () => {
     });
 
     it('should return client-specific reservations for non-admin', async () => {
-      mockReservationModel.find.mockImplementation(() => ({
+      mockReservationModel.find.mockReturnValue({
         populate: jest.fn().mockReturnValue({
           exec: jest.fn().mockResolvedValue([mockReservation]),
         }),
-      }));
+      });
       const result = await service.findAll(mockClient._id.toString(), []);
       expect(reservationModel.find).toHaveBeenCalledWith({
         client: mockClient._id.toString(),
@@ -224,11 +207,11 @@ describe('ReservationService', () => {
 
   describe('findAllReservationsCleaner', () => {
     it('should return all reservations for a cleaner', async () => {
-      mockReservationModel.find.mockImplementation(() => ({
+      mockReservationModel.find.mockReturnValue({
         populate: jest.fn().mockReturnValue({
           exec: jest.fn().mockResolvedValue([mockReservation]),
         }),
-      }));
+      });
       const result = await service.findAllReservationsCleaner(
         mockUser._id.toString(),
       );
@@ -241,11 +224,11 @@ describe('ReservationService', () => {
 
   describe('findAllReservationsClient', () => {
     it('should return all reservations for a client', async () => {
-      mockReservationModel.find.mockImplementation(() => ({
+      mockReservationModel.find.mockReturnValue({
         populate: jest.fn().mockReturnValue({
           exec: jest.fn().mockResolvedValue([mockReservation]),
         }),
-      }));
+      });
       const result = await service.findAllReservationsClient(
         mockClient._id.toString(),
       );
@@ -275,12 +258,12 @@ describe('ReservationService', () => {
           status: 'accepted',
         }),
       };
-      mockReservationModel.findById.mockImplementation(() => ({
+      mockReservationModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(updatedReservation),
-      }));
-      mockReservationModel.find.mockImplementation(() => ({
+      });
+      mockReservationModel.find.mockReturnValue({
         exec: jest.fn().mockResolvedValue([]),
-      }));
+      });
 
       const result = await service.update(
         mockReservation._id.toString(),
@@ -304,9 +287,9 @@ describe('ReservationService', () => {
     });
 
     it('should throw NotFoundException if reservation not found', async () => {
-      mockReservationModel.findById.mockImplementation(() => ({
+      mockReservationModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(null),
-      }));
+      });
       await expect(
         service.update(
           mockReservation._id.toString(),
@@ -323,9 +306,9 @@ describe('ReservationService', () => {
         status: 'accepted',
         save: jest.fn(),
       };
-      mockReservationModel.findById.mockImplementation(() => ({
+      mockReservationModel.findById.mockReturnValue({
         exec: jest.fn().mockResolvedValue(nonPendingReservation),
-      }));
+      });
       await expect(
         service.update(
           mockReservation._id.toString(),
@@ -339,9 +322,9 @@ describe('ReservationService', () => {
 
   describe('remove', () => {
     it('should remove a reservation successfully', async () => {
-      mockReservationModel.findByIdAndDelete.mockImplementation(() => ({
+      mockReservationModel.findByIdAndDelete.mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockReservation),
-      }));
+      });
       await service.remove(
         mockReservation._id.toString(),
         mockClient._id.toString(),
@@ -353,9 +336,9 @@ describe('ReservationService', () => {
     });
 
     it('should throw NotFoundException if reservation not found', async () => {
-      mockReservationModel.findByIdAndDelete.mockImplementation(() => ({
+      mockReservationModel.findByIdAndDelete.mockReturnValue({
         exec: jest.fn().mockResolvedValue(null),
-      }));
+      });
       await expect(
         service.remove(
           mockReservation._id.toString(),
