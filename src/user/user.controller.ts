@@ -21,7 +21,7 @@ import { ImageUploadInterceptor } from '../common/middleware/multer.middleware';
 
 @Controller('user')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@Roles(Role.Admin)
+// @Roles(Role.Admin)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -35,13 +35,13 @@ export class UserController {
   }
 
   @Get()
-  @Roles(Role.Admin, Role.client)
+  // @Roles(Role.Admin, Role.client)
   findAll() {
     return this.userService.findAll();
   }
 
   @Get(':id')
-  @Roles(Role.Admin, Role.client)
+  // @Roles(Role.Admin, Role.client)
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }

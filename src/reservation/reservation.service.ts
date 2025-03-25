@@ -13,7 +13,6 @@ import {
 } from './entities/reservation.entity';
 import { User } from '../user/entities/user.entity';
 import { Role } from '../common/enums/roles.enum';
-import { log } from 'console';
 
 @Injectable()
 export class ReservationService {

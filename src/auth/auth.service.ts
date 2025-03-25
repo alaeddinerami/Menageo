@@ -21,11 +21,43 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
+  async onApplicationBootstrap() {
+    await this.seedAdminUser();
+  }
 
+  async seedAdminUser() {
+    const adminEmail = this.configService.get<string>('ADMIN_EMAIL');
+    const adminPassword = this.configService.get<string>('ADMIN_PASSWORD');
+
+    if (!adminEmail || !adminPassword) {
+      console.error('Admin email or password not provided in configuration');
+      return;
+    }
+
+    try {
+      const existingAdmin = await this.userModel.findOne({ email: adminEmail }).exec();
+      if (!existingAdmin) {
+        const hashedPassword = await bcrypt.hash(adminPassword, 8);
+        const adminUser = await this.userModel.create({
+          name: 'Admin',
+          email: adminEmail,
+          password: hashedPassword,
+          roles: [Role.Admin],
+          phone: '0631713538',
+          location: 'Admin Office',
+          image: null,
+        });
+      } else {
+        // log('Admin user already exists:', adminEmail);
+      }
+    } catch (error) {
+      console.error('Error seeding admin user:', error.message);
+    }
+  }
   async validateUser(userId: string): Promise<User> {
     const user = await this.userModel.findById(userId).exec();
     if (!user) {
-      throw new UnauthorizedException('Invalid token'); //token is sfbbsfb
+      throw new UnauthorizedException('Invalid token'); 
     }
     return user;
   }
