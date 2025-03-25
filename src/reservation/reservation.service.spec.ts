@@ -209,7 +209,7 @@ describe('ReservationService', () => {
     it('should return all reservations for a cleaner', async () => {
       mockReservationModel.find.mockReturnValue({
         populate: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue([mockReservation]),
+          exec: jest.fn().mockResolvedValue([mockReservation]),//
         }),
       });
       const result = await service.findAllReservationsCleaner(

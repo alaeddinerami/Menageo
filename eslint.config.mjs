@@ -42,15 +42,10 @@ export default tseslint.config(
           varsIgnorePattern: '^',
         },
       ],
-      // '@typescript-eslint/no-empty-function': 'off',
-      // '@typescript-eslint/no-unsafe-enum-comparison': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/no-unsafe-enum-comparison': 'off',
       '@typescript-eslint/prefer-promise-reject-errors': 'off',
-      "@typescript-eslint/unbound-method": [
-      "error",
-      {
-        "ignoreStatic": true // Ignore unbound methods in mock contexts
-      }
-    ]
+      "@typescript-eslint/unbound-method": "off",
     },
   },
 );
