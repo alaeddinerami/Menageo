@@ -50,7 +50,7 @@ export class UserController {
   @UseInterceptors(ImageUploadInterceptor())
   async update(
     @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() updateUserDto: UpdateUserDto,//
     @UploadedFile() image?: Express.Multer.File,
   ) {
     return this.userService.update(id, updateUserDto, image);
