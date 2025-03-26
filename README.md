@@ -1,8 +1,8 @@
-# Reservation & Employee Chat System 
+# Reservation & Employee Chat System 🗓️💬
 
 A NestJS backend for managing service reservations and facilitating real-time chat between customers and employees.
 
-## Key Features 
+## Key Features ✨
 
 **Reservation System**
 -  Time slot availability checking
@@ -31,7 +31,7 @@ A NestJS backend for managing service reservations and facilitating real-time ch
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/your-username/reservation-chat.git
+git clone https://github.com/alaeddinerami/Menageo
 cd server
 npm install
 
@@ -41,12 +41,61 @@ cp .env.example .env
 
 # 3. Start development server
 npm run start:dev
-
 ```
-## testing cmd
+
+## Testing
+
 ```bash
 npm run test:user-reservation
 ```
-## Build and start containers
-docker-compose up --build
 
+## Docker
+
+```bash
+# Build and start containers
+docker-compose up --build
+```
+
+---
+
+## 📚 API Endpoints
+
+### 🔐 Auth Routes (`/auth`)
+| Method | Endpoint        | Description         |
+|--------|------------------|---------------------|
+| POST   | `/auth/signUp`   | Register a new user |
+| POST   | `/auth/login`    | Login a user        |
+
+---
+
+### 👤 User Routes (`/user`)
+| Method | Endpoint         | Description               |
+|--------|------------------|---------------------------|
+| GET    | `/user`          | Get all users             |
+| POST   | `/user`          | Create a new user         |
+| GET    | `/user/:id`      | Get a specific user       |
+| PATCH  | `/user/:id`      | Update a user             |
+| DELETE | `/user/:id`      | Delete a user             |
+
+---
+
+### 📅 Reservation Routes (`/reservations`)
+| Method | Endpoint                  | Description                        |
+|--------|---------------------------|------------------------------------|
+| GET    | `/reservations`           | Get all reservations               |
+| POST   | `/reservations`           | Create a new reservation           |
+| GET    | `/reservations/cleaner`   | Get reservations by cleaner        |
+| GET    | `/reservations/client`    | Get reservations by client         |
+| GET    | `/reservations/:id`       | Get reservation by ID              |
+| PATCH  | `/reservations/:id`       | Update reservation by ID           |
+| DELETE | `/reservations/:id`       | Delete reservation by ID           |
+
+---
+
+### 💬 Chat Routes (`/chat`)
+| Method | Endpoint                                            | Description                        |
+|--------|-----------------------------------------------------|------------------------------------|
+| POST   | `/chat/message`                                     | Send a message                     |
+| GET    | `/chat/messages/:userId/:otherUserId`               | Get messages between two users     |
+| GET    | `/chat/:userId`                                     | Get all chats for a user           |
+| PATCH  | `/chat/message/:messageId/read`                     | Mark message as read               |
