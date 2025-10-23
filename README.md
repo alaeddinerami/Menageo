@@ -1,6 +1,17 @@
 # Reservation & Employee Chat System 🗓️💬
 
-A NestJS backend for managing service reservations and facilitating real-time chat between customers and employees.
+Menageo is a NestJS-based backend application that provides a reservation system and a real-time chat feature for customers and employees. The project aims to simplify the management of service reservations and facilitate communication between clients and service providers.
+
+Main Function Points
+Reservation System: Includes features like time slot availability checking, JWT-protected reservation operations, reservation conflict detection, and a notification system (email/SMS ready).
+Employee Chat: Offers real-time messaging via Socket.IO, conversation history tracking, online status indicators, end-to-end encrypted messages, and message read receipts.
+Technology Stack
+Core: NestJS 11
+Database: MongoDB + Mongoose
+Real-Time: Socket.IO
+Auth: JWT + Passport
+Validation: class-validator
+Testing: Jest + Supertest
 
 ## Key Features ✨
 
